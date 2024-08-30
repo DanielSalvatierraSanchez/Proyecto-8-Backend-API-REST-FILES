@@ -4,10 +4,6 @@ const Ingredient = require("../models/ingredient");
 const createIngredient = async (req, res, next) => {
     try {
         const { name, quantity, units } = req.body;
-        // if (units !== "Gramos" && units !== "Mililitros" && units !== "Unidad" && units !== "Unidades") {
-        //     return res.status(400).json({ message: 'Unidad de medida mal introducida. Introduce: Gramos, Miligramos o Unidades' })
-        // }
-
         const ingredientDuplicated = await Ingredient.findOne({ name, quantity });
         if (ingredientDuplicated) {
             if (req.file) {
@@ -58,10 +54,8 @@ const getIngredientByName = async (req, res, next) => {
 const updateIngredient = async (req, res, next) => {
     try {
         const { id } = req.params;
-
         const ingredientModify = new Ingredient(req.body)
         ingredientModify._id = id;
-
         if (req.file) {
             ingredientModify.img = req.file.path
             const oldIngredient = await Ingredient.findById(id);
@@ -72,7 +66,6 @@ const updateIngredient = async (req, res, next) => {
         if (!ingredientUpdated){
             return res.status(400).json({ message: 'No existe ese producto.' });
         }
-
         return res.status(200).json({ message: 'Producto actualizado correctamente', ingredientUpdated });
     } catch (error) {
         return res.status(400).json(`❌ Fallo en updateIngredient: ${error.message}`)
@@ -82,14 +75,11 @@ const updateIngredient = async (req, res, next) => {
 const deleteIngredient = async (req, res, next) => {
     try {
         const { id } = req.params;
-
         const ingredientDeleted = await Ingredient.findByIdAndDelete(id);
         if (!ingredientDeleted) {
             return res.status(400).json({ message: "Ese ingrediente ya no existe en nuestro stock." });
         }
-
         deleteFile(ingredientDeleted.img);
-
         return res.status(200).json({ message: "Ingrediente eliminado de nuestro stock.", ingredientDeleted });
     } catch (error) {
         return res.status(400).json(`❌ Fallo en deleteIngredient: ${error.message}`)
