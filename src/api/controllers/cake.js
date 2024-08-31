@@ -1,8 +1,12 @@
+const { deleteFile } = require("../../utils/deleteFile");
 const Cake = require("../models/cake");
 
 const createCake = async (req, res, next) => {
     try {
         const { name, difficulty } = req.body;
+        if (difficulty !== "Baja" && difficulty !== "Media" && difficulty !== "Alta") {
+            return res.status(400).json({ message: 'La dificultad ha sido mal introducida. Introduce: Baja, Media o Alta' })
+        };
         const cakeDuplicated = await Cake.findOne({ name });
         if (cakeDuplicated) {
             return res.status(400).json({ message: `La tarta ${name} ya ha sido creada.` })
@@ -10,74 +14,87 @@ const createCake = async (req, res, next) => {
         
         const newCake = new Cake(req.body);
         if (req.files) {
-            newCake.img = req.files.img[0].path;
-            newCake.img2 = req.files.img2[0].path;
-            newCake.img3 = req.files.img3[0].path;
+            if (req.files.img) {
+                newCake.img = req.files.img[0].path;
+            }
+            if (req.files.img2) {
+                newCake.img2 = req.files.img2[0].path;
+            }
+            if (req.files.img3) {
+                newCake.img3 = req.files.img3[0].path;
+            }
         }
+        // if (req.files) {
+        //     newCake.img = req.files.img[0].path;
+        //     newCake.img2 = req.files.img2[0].path;
+        //     newCake.img3 = req.files.img3[0].path;
+        // }
 
-        const ingredientSaved = await newIngredient.save()
-        return res.status(201).json({ message: `Se acaba de añadir a nuestro stock: ${quantity} ${units} de ${name}.`, ingredientSaved })
+        const cakeSaved = await newCake.save()
+        return res.status(201).json({ message: `Nuevo postre creado: ${name}.`, cakeSaved })
     } catch (error) {
-        return res.status(400).json(`❌ Fallo en createIngredient: ${error.message}`)
+        return res.status(400).json(`❌ Fallo en createCake: ${error.message}`)
     }
 };
 
-const getAllIngredients = async (req, res, next) => {
+const getAllCakes = async (req, res, next) => {
     try {
-        const allIngredients = await Ingredient.find();
-        if (!allIngredients.length) {
-            return res.status(400).json({ message: "No tenemos ingredientes en nuestro stock." });
+        const allCakes = await Cake.find();
+        if (!allCakes.length) {
+            return res.status(400).json({ message: "No tenemos ninguna tarta en nuestro stock." });
         }
-        return res.status(200).json({ message: "Estos son los ingredientes que tenemos en stock:", allIngredients })
+        return res.status(200).json({ message: "Estas son las tartas que tenemos en stock:", allCakes })
     } catch (error) {
-        return res.status(400).json(`❌ Fallo en getAllIngredients: ${error.message}`)
+        return res.status(400).json(`❌ Fallo en getAllCakes: ${error.message}`)
     }
 };
 
-const getIngredientByName = async (req, res, next) => {
+const getCakeByName = async (req, res, next) => {
     try {
         const { name } = req.params;
-        const findIngredientByName = await Ingredient.find({ name: new RegExp(name, 'i') });
-        if (!findIngredientByName.length) {
-            return res.status(400).json({ message: `No existe ningún ingrediente en nuestro stock que contenga '${name}'` });
+        const findCakeByName = await Cake.find({ name: new RegExp(name, 'i') });
+        if (!findCakeByName.length) {
+            return res.status(400).json({ message: `No existe ninguna tarta en nuestro stock que contenga '${name}'` });
         }
-        return res.status(200).json({ message: "Ingrediente encontrado:", findIngredientByName })
+        return res.status(200).json({ message: "Tarta encontrada:", findCakeByName })
     } catch (error) {
-        return res.status(400).json(`❌ Fallo en getIngredientByName: ${error.message}`)
+        return res.status(400).json(`❌ Fallo en getCakeByName: ${error.message}`)
     }
 };
 
-const updateIngredient = async (req, res, next) => {
+const updateCake = async (req, res, next) => {
     try {
         const { id } = req.params;
-        const ingredientModify = new Ingredient(req.body)
-        ingredientModify._id = id;
-        if (req.file) {
-            ingredientModify.img = req.file.path
-            const oldIngredient = await Ingredient.findById(id);
-            deleteFile(oldIngredient.img);
+        const cakeModify = new Cake(req.body)
+        cakeModify._id = id;
+        if (req.files) {
+            cakeModify.img = req.files.path
+            const oldCake = await Cake.findById(id);
+            deleteFile(oldCake.img);
         }
 
-        const ingredientUpdated = await Ingredient.findByIdAndUpdate(id, ingredientModify, { new: true });
-        if (!ingredientUpdated){
-            return res.status(400).json({ message: 'No existe ese producto.' });
+        const cakeUpdated = await Cake.findByIdAndUpdate(id, cakeModify, { new: true });
+        if (!cakeUpdated){
+            return res.status(400).json({ message: 'No existe esta tarta.' });
         }
-        return res.status(200).json({ message: 'Producto actualizado correctamente', ingredientUpdated });
+        return res.status(200).json({ message: 'Tarta actualizada correctamente', cakeUpdated });
     } catch (error) {
-        return res.status(400).json(`❌ Fallo en updateIngredient: ${error.message}`)
+        return res.status(400).json(`❌ Fallo en updateCake: ${error.message}`)
     }
 };
 
-const deleteIngredient = async (req, res, next) => {
+const deleteCake = async (req, res, next) => {
     try {
         const { id } = req.params;
-        const ingredientDeleted = await Ingredient.findByIdAndDelete(id);
-        if (!ingredientDeleted) {
-            return res.status(400).json({ message: "Ese ingrediente ya no existe en nuestro stock." });
+        const cakeDeleted = await Cake.findByIdAndDelete(id);
+        if (!cakeDeleted) {
+            return res.status(400).json({ message: "Esta tarta ya no existe en nuestro stock." });
         }
-        deleteFile(ingredientDeleted.img);
-        return res.status(200).json({ message: "Ingrediente eliminado de nuestro stock.", ingredientDeleted });
+        deleteFile(cakeDeleted.img);
+        return res.status(200).json({ message: `Tarta eliminada de nuestro stock.`, cakeDeleted });
     } catch (error) {
-        return res.status(400).json(`❌ Fallo en deleteIngredient: ${error.message}`)
+        return res.status(400).json(`❌ Fallo en deleteCake: ${error.message}`)
     }
 };
+
+module.exports = { createCake, getAllCakes, getCakeByName, updateCake, deleteCake };
