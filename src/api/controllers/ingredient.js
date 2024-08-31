@@ -4,13 +4,12 @@ const Ingredient = require("../models/ingredient");
 const createIngredient = async (req, res, next) => {
     try {
         const { name, quantity, units } = req.body;
+        if (units !== "Gramos" && units !== "Miligramos" && units !== "Unidad" && units !== "Unidades") {
+            return res.status(400).json({ message: 'Unidad de medida mal introducida. Introduce: Gramos, Miligramos o Unidades' })
+        };
+    
         const ingredientDuplicated = await Ingredient.findOne({ name, quantity });
         if (ingredientDuplicated) {
-            if (req.file) {
-                ingredientDuplicated.img = req.file.path
-                const oldIngredient = ingredientDuplicated;
-                deleteFile(oldIngredient.img);
-            }
             return res.status(400).json({ message: `El ingrediente ${name} ya lo tenemos con esa misma cantidad de ${quantity} ${units}.` })
         };
 
