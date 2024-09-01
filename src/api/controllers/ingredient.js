@@ -5,7 +5,7 @@ const createIngredient = async (req, res, next) => {
     try {
         const { name, quantity, units } = req.body;
         if (units !== "Gramos" && units !== "Miligramos" && units !== "Unidad" && units !== "Unidades") {
-            return res.status(400).json({ message: 'Unidad de medida mal introducida. Introduce: Gramos, Miligramos, Unidad o Unidades' })
+            return res.status(400).json({ message: 'Unidad de medida no ha sido introducida o ha sido mal introducida. Introduce: Gramos, Miligramos, Unidad o Unidades' })
         };
     
         const ingredientDuplicated = await Ingredient.findOne({ name, quantity });
@@ -53,11 +53,14 @@ const getIngredientByName = async (req, res, next) => {
 const updateIngredient = async (req, res, next) => {
     try {
         const { id } = req.params;
-        const { quantity } = req.body;
+        const { quantity, units } = req.body;
 
         if (quantity < 1) {
             return res.status(400).json({ message: 'No puedes tener un ingrediente con cantidad 0.' })
         }
+        // if (units !== "Gramos" && units !== "Miligramos" && units !== "Unidad" && units !== "Unidades") {
+        //     return res.status(400).json({ message: 'Unidad de medida ha sido mal introducida. Introduce: Gramos, Miligramos, Unidad o Unidades' })
+        // };
 
         const ingredientModify = new Ingredient(req.body)
         ingredientModify._id = id;
