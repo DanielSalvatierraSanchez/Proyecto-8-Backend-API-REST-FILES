@@ -4,7 +4,12 @@ const Cake = require("../models/cake");
 const createCake = async (req, res, next) => {
     try {
         const { name, difficulty } = req.body;
-
+        if (!name && !difficulty) {
+            return res.status(400).json({ message: 'NO HAS INTRODUCIDO NI UN P... DATO!!! JAJAJA' })
+        }
+        if (!name) {
+            return res.status(400).json({ message: 'No ha sido introducido el nombre de la tarta.' })
+        };
         if (difficulty !== "Baja" && difficulty !== "Media" && difficulty !== "Alta") {
             return res.status(400).json({ message: 'La dificultad no ha sido introducida o ha sido mal introducida. Introduce: Baja, Media o Alta' })
         };
@@ -16,19 +21,23 @@ const createCake = async (req, res, next) => {
 
         const newCake = new Cake(req.body);
         if (req.files) {
-            if (req.files.img) {
-                newCake.img = req.files.img[0].path;
+            if (req.files.firstImg) {
+                newCake.firstImg = req.files.firstImg[0].path;
+            } else {
+                return res.status(400).json({ message: 'No ha sido introducida ninguna imagen.' })
+            };
+            if (req.files.secondImg) {
+                newCake.secondImg = req.files.secondImg[0].path;
+                if (req.files.thirdImg) {
+                    newCake.thirdImg = req.files.thirdImg[0].path;
+                };
+            } else {
+                deleteFile(req.files.thirdImg[0].path);
             }
-            if (req.files.img2) {
-                newCake.img2 = req.files.img2[0].path;
-            }
-            if (req.files.img3) {
-                newCake.img3 = req.files.img3[0].path;
-            }
-        }
+        };
 
         const cakeSaved = await newCake.save()
-        return res.status(201).json({ message: `Nuevo postre creado: ${name}.`, cakeSaved })
+        return res.status(201).json({ message: `Nueva tarta creada: ${name}.`, cakeSaved })
     } catch (error) {
         return res.status(400).json(`❌ Fallo en createCake: ${error.message}`)
     }
@@ -91,13 +100,16 @@ const updateCake = async (req, res, next) => {
 const deleteCake = async (req, res, next) => {
     try {
         const { id } = req.params;
+
         const cakeDeleted = await Cake.findByIdAndDelete(id);
         if (!cakeDeleted) {
             return res.status(400).json({ message: "Esta tarta ya no existe en nuestro stock." });
         }
+        // deleteFile(cakeDeleted.img);
+
         if (cakeDeleted) {
-            if (cakeDeleted.img) {
-                deleteFile(cakeDeleted.img);
+            if (cakeDeleted.img1) {
+                deleteFile(cakeDeleted.img1);
             }
             if (cakeDeleted.img2) {
                 deleteFile(cakeDeleted.img2);
