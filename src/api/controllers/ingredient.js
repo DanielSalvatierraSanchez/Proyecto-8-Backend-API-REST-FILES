@@ -4,10 +4,19 @@ const Ingredient = require("../models/ingredient");
 const createIngredient = async (req, res, next) => {
     try {
         const { name, quantity, units } = req.body;
+        if (!name && !quantity && !units && !req.file) {
+            return res.status(400).json({ message: 'NO HAS INTRODUCIDO NI UN P... DATO!!! JAJAJA' })
+        }
+        if (!name) {
+            return res.status(400).json({ message: 'No ha sido introducido el nombre del ingrediente.' })
+        };
+        if (quantity < 1 || quantity === undefined) {
+            return res.status(400).json({ message: 'No ha sido introducida ninguna cantidad o ha sido 0.' })
+        };
         if (units !== "Gramos" && units !== "Miligramos" && units !== "Unidad" && units !== "Unidades") {
             return res.status(400).json({ message: 'Unidad de medida no ha sido introducida o ha sido mal introducida. Introduce: Gramos, Miligramos, Unidad o Unidades' })
         };
-    
+
         const ingredientDuplicated = await Ingredient.findOne({ name, quantity });
         if (ingredientDuplicated) {
             return res.status(400).json({ message: `El ingrediente ${name} ya lo tenemos con esa misma cantidad de ${quantity} ${units}.` })
@@ -16,6 +25,8 @@ const createIngredient = async (req, res, next) => {
         const newIngredient = new Ingredient(req.body);
         if (req.file) {
             newIngredient.img = req.file.path;
+        } else {
+            return res.status(400).json({ message: 'No ha sido introducida ninguna imagen.' })
         };
 
         const ingredientSaved = await newIngredient.save()
@@ -58,18 +69,19 @@ const updateIngredient = async (req, res, next) => {
         if (quantity < 1) {
             return res.status(400).json({ message: 'No puedes tener un ingrediente con cantidad 0.' })
         }
-        // if (units !== "Gramos" && units !== "Miligramos" && units !== "Unidad" && units !== "Unidades") {
-        //     return res.status(400).json({ message: 'Unidad de medida ha sido mal introducida. Introduce: Gramos, Miligramos, Unidad o Unidades' })
-        // };
+        if (units !== "Gramos" && units !== "Miligramos" && units !== "Unidad" && units !== "Unidades" && units !== undefined) {
+            return res.status(400).json({ message: 'Unidad de medida mal introducida. Introduce: Gramos, Miligramos, Unidad o Unidades' })
+        };
 
         const ingredientModify = new Ingredient(req.body)
         ingredientModify._id = id;
+        
         if (req.file) {
-            ingredientModify.img = req.file.path
             const oldIngredient = await Ingredient.findById(id);
             deleteFile(oldIngredient.img);
+            ingredientModify.img = req.file.path
         }
-
+        
         const ingredientUpdated = await Ingredient.findByIdAndUpdate(id, ingredientModify, { new: true });
         if (!ingredientUpdated){
             return res.status(400).json({ message: 'No existe ese ingrediente.' });
@@ -83,6 +95,7 @@ const updateIngredient = async (req, res, next) => {
 const deleteIngredient = async (req, res, next) => {
     try {
         const { id } = req.params;
+
         const ingredientDeleted = await Ingredient.findByIdAndDelete(id);
         if (!ingredientDeleted) {
             return res.status(400).json({ message: "Ese ingrediente ya no existe en nuestro stock." });

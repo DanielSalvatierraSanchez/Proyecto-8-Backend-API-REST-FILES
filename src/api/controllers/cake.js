@@ -13,7 +13,7 @@ const createCake = async (req, res, next) => {
         if (cakeDuplicated) {
             return res.status(400).json({ message: `La tarta ${name} ya ha sido creada anteriormente.` })
         };
-        
+
         const newCake = new Cake(req.body);
         if (req.files) {
             if (req.files.img) {
@@ -26,11 +26,6 @@ const createCake = async (req, res, next) => {
                 newCake.img3 = req.files.img3[0].path;
             }
         }
-        // if (req.files) {
-        //     newCake.img = req.files.img[0].path;
-        //     newCake.img2 = req.files.img2[0].path;
-        //     newCake.img3 = req.files.img3[0].path;
-        // }
 
         const cakeSaved = await newCake.save()
         return res.status(201).json({ message: `Nuevo postre creado: ${name}.`, cakeSaved })
@@ -67,56 +62,20 @@ const getCakeByName = async (req, res, next) => {
 const updateCake = async (req, res, next) => {
     try {
         const { id } = req.params;
-        const { ingredients } = req.body;
-
+        const { ingredients, ...rest } = req.body;
+        const restParams = { ...rest };
+        const oldCake = await Cake.findById(id);
+        // if(oldCake.img) { deleteFile(oldCake.img) }
         const cakeModify = new Cake(req.body);
         cakeModify._id = id;
-        if (cakeModify) {
-            cakeModify.$addToSet = { ingredients }
-        };
 
         if (cakeModify.difficulty !== "Baja" && cakeModify.difficulty !== "Media" && cakeModify.difficulty !== "Alta" && cakeModify.difficulty !== undefined) {
             return res.status(400).json({ message: 'La dificultad ha sido mal introducida. Introduce: Baja, Media o Alta' })
         };
-        // const restParams = { ...rest };
-        // if (ingredients) {
-        //     restParams.$addToSet = { ingredients }
-        // }
 
-
-
-        // const cakeModify = new Cake(req.body)
-        // cakeModify._id = id;
-        // if (req.files) {
-        //     cakeModify.img = req.files.path
-        //     const oldCake = await Cake.findById(id);
-        //     if (oldCake) {
-        //         if (oldCake.img) {
-        //             deleteFile(oldCake.img);
-        //         }
-        //         if (oldCake.img2) {
-        //             deleteFile(oldCake.img2);
-        //         }
-        //         if (oldCake.img3) {
-        //             deleteFile(oldCake.img3);
-        //         }
-        //     }
-        // }
-
-        // if (req.files) {
-        //     const oldCake = await Cake.findById(id);
-        //     if (oldCake) {
-        //         if (oldCake.img) {
-        //             deleteFile(oldCake.img);
-        //         }
-        //         if (oldCake.img2) {
-        //             deleteFile(oldCake.img2);
-        //         }
-        //         if (oldCake.img3) {
-        //             deleteFile(oldCake.img3);
-        //         }
-        //     }
-        // }
+        if (ingredients) {
+        oldCake.$addToSet = { ingredients }
+        };
 
         const cakeUpdated = await Cake.findByIdAndUpdate(id, cakeModify, { new: true });
         if (!cakeUpdated){
