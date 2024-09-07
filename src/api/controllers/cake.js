@@ -1,41 +1,26 @@
-const { deleteFile } = require("../../utils/deleteFile");
+const { deleteFile, deleteImageUploaded } = require("../../utils/deleteFile&Image");
 const Cake = require("../models/cake");
 const Ingredient = require("../models/ingredient");
+
 const createCake = async (req, res, next) => {
     try {
         const { name, difficulty } = req.body;
         if (!name && !difficulty) {
-            if (req.files) {
-                deleteFile(req.files.firstImg[0].path) ||
-                deleteFile(req.files.secondImg[0].path) ||
-                deleteFile(req.files.thirdImg[0].path);
-            }
+            deleteImageUploaded(req.files);
             return res.status(400).json({ message: 'NO HAS INTRODUCIDO NI UN P... DATO!!! JAJAJA' })
         }
         if (!name) {
-            if (req.files) {
-                deleteFile(req.files.firstImg[0].path) ||
-                deleteFile(req.files.secondImg[0].path) ||
-                deleteFile(req.files.thirdImg[0].path);
-            }
+            deleteImageUploaded(req.files);
             return res.status(400).json({ message: 'No ha sido introducido el nombre de la tarta.' })
         };
         if (difficulty !== "Baja" && difficulty !== "Media" && difficulty !== "Alta") {
-            if (req.files) {
-                deleteFile(req.files.firstImg[0].path) ||
-                deleteFile(req.files.secondImg[0].path) ||
-                deleteFile(req.files.thirdImg[0].path);
-            }
+            deleteImageUploaded(req.files);
             return res.status(400).json({ message: 'La dificultad no ha sido introducida o ha sido mal introducida. Introduce: Baja, Media o Alta' })
         };
 
         const cakeDuplicated = await Cake.findOne({ name });
         if (cakeDuplicated) {
-            if (req.files) {
-                deleteFile(req.files.firstImg[0].path) ||
-                deleteFile(req.files.secondImg[0].path) ||
-                deleteFile(req.files.thirdImg[0].path);
-            }
+            deleteImageUploaded(req.files);
             return res.status(400).json({ message: `La tarta ${name} ya ha sido creada anteriormente.` })
         };
 
@@ -69,11 +54,7 @@ const createCake = async (req, res, next) => {
         const cakeSaved = await newCake.save()
         return res.status(201).json({ message: `Nueva tarta creada: ${name}.`, cakeSaved })
     } catch (error) {
-        if (req.files) {
-            deleteFile(req.files.firstImg[0].path) ||
-            deleteFile(req.files.secondImg[0].path) ||
-            deleteFile(req.files.thirdImg[0].path);
-        }
+        deleteImageUploaded(req.files);
         return res.status(400).json(`❌ Fallo en createCake: ${error.message}`)
     }
 };

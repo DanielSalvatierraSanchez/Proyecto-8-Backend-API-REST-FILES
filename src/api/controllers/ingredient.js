@@ -1,4 +1,4 @@
-const { deleteFile } = require("../../utils/deleteFile");
+const { deleteFile } = require("../../utils/deleteFile&Image");
 const Ingredient = require("../models/ingredient");
 
 const createIngredient = async (req, res, next) => {
