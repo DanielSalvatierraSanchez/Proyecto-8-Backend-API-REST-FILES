@@ -1,5 +1,6 @@
 const { deleteFile } = require("../../utils/deleteFile");
 const Cake = require("../models/cake");
+const Ingredient = require("../models/ingredient");
 const createCake = async (req, res, next) => {
     try {
         const { name, difficulty } = req.body;
@@ -79,8 +80,7 @@ const createCake = async (req, res, next) => {
 
 const getAllCakes = async (req, res, next) => {
     try {
-        const allCakes = await Cake.find()
-        // .populate('ingredients');
+        const allCakes = await Cake.find().populate('ingredients');
         if (!allCakes.length) {
             return res.status(400).json({ message: "No tenemos ninguna tarta en nuestro stock." });
         }
@@ -184,4 +184,21 @@ const deleteCake = async (req, res, next) => {
     }
 };
 
-module.exports = { createCake, getAllCakes, getCakeByName, updateCake, deleteCake };
+const deleteIngredientOfCake = async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        const { name } = req.body;
+
+        const searchIngredient = await Ingredient.findOne({ name });
+        if (!searchIngredient) {
+            return res.status(400).json({ message: `La tarta mencionada no tiene ${name}.` });
+        }
+
+        const ingredientDeleted = await Ingredient.findOneAndDelete(id, { name }, {new: true});
+        return res.status(200).json({ message: `Se ha eliminado correctamente el ingrediente ${name}.`, ingredientDeleted });
+    } catch (error) {
+        return res.status(400).json(`❌ Fallo en deleteIngredientOfCake: ${error.message}`)
+    }
+};
+
+module.exports = { createCake, getAllCakes, getCakeByName, updateCake, deleteCake, deleteIngredientOfCake };
