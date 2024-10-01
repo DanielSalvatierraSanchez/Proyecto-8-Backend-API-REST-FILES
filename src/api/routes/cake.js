@@ -7,7 +7,7 @@ const { getCakeByName, getAllCakes, updateCake, deleteCake, createCake, deleteIn
 cakeRoutes.post("/register", uploadFolders("Cakes").fields([{ name: "firstImg" }, { name: "secondImg" }, { name: "thirdImg" }]), createCake);
 cakeRoutes.get("/getBy/:name", getCakeByName);
 cakeRoutes.get("/", getAllCakes);
-//ccakeRoutes.put("/update/:id", upload.fields([{ name: "firstImg" }, { name: "secondImg" }, { name: "thirdImg" }]), updateCake);
+// cakeRoutes.put("/update/:id", upload.fields([{ name: "firstImg" }, { name: "secondImg" }, { name: "thirdImg" }]), updateCake);
 cakeRoutes.put("/update/:id", uploadFolders("Cakes").fields([{ name: "firstImg" }, { name: "secondImg" }, { name: "thirdImg" }]), updateCake);
 cakeRoutes.delete("/deleteIngredient/:id", deleteIngredientOfCake);
 cakeRoutes.delete("/delete/:id", deleteCake);
